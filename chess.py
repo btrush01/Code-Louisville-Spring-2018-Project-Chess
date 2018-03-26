@@ -6,6 +6,7 @@ count=0
 
 with open('games.csv', 'r') as csvfile:
     csv_reader = csv.reader(csvfile)
+    #MyList = csv.reader(csvfile.text.strip().split('\n'))
     #the_whole_file = list(csv_reader)
 
     conn = sqlite3.connect("mydb.sqlite")
@@ -40,6 +41,12 @@ with open('games.csv', 'r') as csvfile:
        ,move varchar(10)
     );
     """)
+#    cur.execute("""
+#        create table WinnerFirstCapture(
+#        Winner char(5)
+#       ,FirstCapture char(5)
+#    );
+#    """)
 
 
     #this allows me to skip the first line in file, which are column headers
@@ -69,64 +76,43 @@ with open('games.csv', 'r') as csvfile:
     t = 0
     f = 0
 
-    for game in cur.execute("select * from Games_10k where victory_status NOT IN ('outoftime', 'draw')").fetchall():
+#    select game_id, min(sequence), winner from Moves m
+#    join Games_10k g on m.game_id = g.id
+#    where m.move like '%x%'
+#    group by m.game_id
+
+    games = cur.execute("""
+                        select game_id, min(sequence), winner from Moves m
+                        join Games_10k where victory_status not in ('outoftime', 'draw') and m.move like '%x%'
+                        group by m.game_id
+                        """).fetchall()
+    for first_capture in games:
         # do things with item
-        print(game[0])
 
         #find minimum capture move % 2 for side color, even is black, odd is white, set min_capture = result
-        cur.execute("""
-        select * from Moves m
-        join Games_10k g
-            on m.game_id = g.id
-        where game_id = ?
-            and move like '%x%'
-        order by sequence
-        limit 1
-        """)
 
-        if sequence % 2 == 0:
-            min_capture = "black"
-        else:
-            min_capture = "white"
-        #if winner = min_capture t+=1, else f+=1
-        if winner == min_capture:
-            t+=1
-        else:
-            f+=1
+        if first_capture is not None:
 
-        result = t/f
-        my_results.append(result)
+            sequence = first_capture[2]
+            winner = first_capture[3]
+
+            if sequence % 2 == 0:
+                min_capture = "black"
+            else:
+                min_capture = "white"
+            #if winner = min_capture t+=1, else f+=1
+            if winner == min_capture:
+                t+=1
+            else:
+                f+=1
+
+    result = [t,f]
+    my_results.append(result)
 
 
-     # for game in games:
-        # do science
-
-#     cur.execute("""
-#     select * from Moves m
-#     join Games_10k g
-#         on m.game_id = g.id
-#     where game_id = ?
-#         and move like '%x%'
-#     order by sequence
-#     limit 1
-#     """, )
 
 
 
     conn.commit()
     cur.close()
     conn.close()
-
-#    cur.execute("SELECT * FROM Lichess_10k_Games_Dataset WHERE victory_status != outoftime;")
-
-#    the_whole_file[row][column]
-#    moves_list = moves.split(' ')
-
-#    i=0
-#    while i < moves_list.length:
-#        i+1
-#    else:
-#
-
-#    cur.execute("SELECT move_number WHERE move like '%x%'")
-#    cur.execute("ORDER BY move_table.move_number LIMIT 1")
