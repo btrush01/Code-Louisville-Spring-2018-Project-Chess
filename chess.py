@@ -41,12 +41,6 @@ with open('games.csv', 'r') as csvfile:
        ,move varchar(10)
     );
     """)
-#    cur.execute("""
-#        create table WinnerFirstCapture(
-#        Winner char(5)
-#       ,FirstCapture char(5)
-#    );
-#    """)
 
 
     #this allows me to skip the first line in file, which are column headers
@@ -70,31 +64,26 @@ with open('games.csv', 'r') as csvfile:
 
             cur.execute("INSERT INTO Games_10k(id,rated,created_at,last_move_at,turns,victory_status,winner,increment_code,white_id,white_rating,black_id,black_rating,moves,opening_eco,opening_name,opening_ply) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
                  (record))
+
     ##### Data is imported
 
     my_results = []
     t = 0
     f = 0
 
-#    select game_id, min(sequence), winner from Moves m
-#    join Games_10k g on m.game_id = g.id
-#    where m.move like '%x%'
-#    group by m.game_id
 
     games = cur.execute("""
                         select game_id, min(sequence), winner from Moves m
-                        join Games_10k where victory_status not in ('outoftime', 'draw') and m.move like '%x%'
+                        join Games_10k g on m.game_id = g.id where victory_status not in ('outoftime', 'draw') and m.move like '%x%'
                         group by m.game_id
                         """).fetchall()
     for first_capture in games:
-        # do things with item
-
         #find minimum capture move % 2 for side color, even is black, odd is white, set min_capture = result
 
         if first_capture is not None:
 
-            sequence = first_capture[2]
-            winner = first_capture[3]
+            sequence = first_capture[1]
+            winner = first_capture[2]
 
             if sequence % 2 == 0:
                 min_capture = "black"
@@ -108,9 +97,6 @@ with open('games.csv', 'r') as csvfile:
 
     result = [t,f]
     my_results.append(result)
-
-
-
 
 
     conn.commit()
