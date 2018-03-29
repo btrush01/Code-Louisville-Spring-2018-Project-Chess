@@ -1,8 +1,9 @@
 import csv
 import sqlite3
+from bokeh.plotting import *
+from bokeh.charts import Donut
+import pandas as pd
 
-
-count=0
 
 with open('games.csv', 'r') as csvfile:
     csv_reader = csv.reader(csvfile)
@@ -11,9 +12,9 @@ with open('games.csv', 'r') as csvfile:
 
     conn = sqlite3.connect("mydb.sqlite")
     cur = conn.cursor()
-    cur.execute("drop table if exists Games_10k;")
+    cur.execute("drop table if exists Games;")
     cur.execute("""
-    create table if not exists Games_10k(
+    create table if not exists Games(
         id varchar(100)
        ,rated Boolean
        ,created_at varchar(100)
@@ -45,6 +46,7 @@ with open('games.csv', 'r') as csvfile:
 
     #this allows me to skip the first line in file, which are column headers
     headerline = True
+    count=0
 
     for record in csv_reader:
         if headerline:
@@ -62,7 +64,7 @@ with open('games.csv', 'r') as csvfile:
                 cur.execute("INSERT INTO Moves(id, game_id, sequence, move) VALUES(?,?,?,?)", (count, game_id, i, move))
                 # increment counter
 
-            cur.execute("INSERT INTO Games_10k(id,rated,created_at,last_move_at,turns,victory_status,winner,increment_code,white_id,white_rating,black_id,black_rating,moves,opening_eco,opening_name,opening_ply) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+            cur.execute("INSERT INTO Games(id,rated,created_at,last_move_at,turns,victory_status,winner,increment_code,white_id,white_rating,black_id,black_rating,moves,opening_eco,opening_name,opening_ply) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
                  (record))
 
     ##### Data is imported
@@ -74,7 +76,7 @@ with open('games.csv', 'r') as csvfile:
 
     games = cur.execute("""
                         select game_id, min(sequence), winner from Moves m
-                        join Games_10k g on m.game_id = g.id where victory_status not in ('outoftime', 'draw') and m.move like '%x%'
+                        join Games g on m.game_id = g.id where victory_status not in ('outoftime', 'draw') and m.move like '%x%'
                         group by m.game_id
                         """).fetchall()
     for first_capture in games:
@@ -102,3 +104,10 @@ with open('games.csv', 'r') as csvfile:
     conn.commit()
     cur.close()
     conn.close()
+
+
+    series = pd.Series([result[0], result[1]], index=('Captured 1st and Won', 'Didn\'t Capture 1st and Won'))
+    p = Donut(series, title="First Capture vs Victor", hover_text='Total Games')
+    # display/save everything
+    output_file("pie.html")
+    show(p)
