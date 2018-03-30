@@ -13,4 +13,4 @@
 
             Further investigation into this matter could determine if there is a difference between groups of players in different rating ranges. Also, which chess openings are more commonly associated a first capture may indicate which are most aggressive, and since aggressive play seems to have an advantage, more aggressive openings may logically also have an advantage. Finally, if a first capture is more commonly associated with White than Black could offer an additional explanation as to why it is commonly accepted White has a slight edge in Chess. Since White moves first, White may also be in a better position to capture first.
 
-        However, such questions are outside the scope of this study at this time. Therefore, I can only conclude that in the broad picture of all games sampled, capturing first gives a player a slight advantage.
+            However, such questions are outside the scope of this study at this time. Therefore, I can only conclude that in the broad picture of all games sampled, capturing first gives a player a slight advantage.
